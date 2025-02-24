@@ -1,26 +1,30 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
+// https://ifcn.madeira.gov.pt/en/atividades-de-natureza/percursos-pedestres-recomendados/percursos-pedestres-recomendados.html
+const axios = require("axios");
+const cheerio = require("cheerio");
+const fs = require("fs");
 
 (async () => {
   try {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    
-    await page.goto('https://ifcn.madeira.gov.pt/en/atividades-de-natureza/percursos-pedestres-recomendados/percursos-pedestres-recomendados.html', { waitUntil: 'networkidle2' });
-    
-    // Wait for #content element to be present
-    await page.waitForSelector('#content', { timeout: 10000 });
-    
-    // Extract HTML content after #content
-    const content = await page.$eval('#content', (element) => {
-      return element.outerHTML;
-    });
-    
-    fs.writeFileSync('external_content.html', content);
-    await browser.close();
-    console.log('Content saved successfully');
+    // 1. Fetch HTML
+    const response = await axios.get(
+      "https://ifcn.madeira.gov.pt/en/atividades-de-natureza/percursos-pedestres-recomendados/percursos-pedestres-recomendados.html"
+    );
+
+    // 2. Load HTML into Cheerio
+    const $ = cheerio.load(response.data);
+
+    // 3. Extract content after #content element
+    const content = $("#content").html();
+
+    if (!content) {
+      throw new Error("#content element not found");
+    }
+
+    // 4. Save to file
+    fs.writeFileSync("external_content.html", content);
+    console.log("Content updated successfully");
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error.message);
     process.exit(1);
   }
 })();
