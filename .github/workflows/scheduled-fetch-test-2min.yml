@@ -2,7 +2,7 @@ name: Scheduled Content Fetch 2 min
 
 on:
   schedule:
-    - cron: "*/2 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
